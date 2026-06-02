@@ -39,7 +39,22 @@ st.markdown("""
   .pct-bar-fill { height: 6px; border-radius: 999px; }
   div[data-baseweb="select"] > div { background: #111112 !important; border-color: #2a2a2c !important; border-radius: 10px !important; color: #e8e6e3 !important; }
   div[data-baseweb="select"] * { color: #e8e6e3 !important; }
-  div[data-baseweb="radio"] * { color: #c8c6c3 !important; }
+  /* 라디오 선택지 — 라이트/시스템 테마에서도 보이도록 강제 */
+  div[role="radiogroup"] label,
+  div[role="radiogroup"] label div,
+  div[role="radiogroup"] label p,
+  div[data-baseweb="radio"] * { color: #d8d6d3 !important; }
+  div[role="radiogroup"] label { background: transparent !important; }
+  /* selectbox / 드롭다운 팝오버 */
+  div[data-baseweb="popover"] { background: #1a1a1b !important; }
+  div[data-baseweb="popover"] *,
+  ul[role="listbox"] li { color: #e8e6e3 !important; }
+  ul[role="listbox"] { background: #1a1a1b !important; }
+  ul[role="listbox"] li:hover { background: #2a2a2c !important; }
+  /* 입력창 텍스트 */
+  input, textarea { color: #e8e6e3 !important; background: #111112 !important; }
+  input::placeholder { color: #5a5855 !important; }
+  div[data-baseweb="input"] > div, div[data-baseweb="base-input"] { background: #111112 !important; }
   label { color: #9a9895 !important; font-size: 0.82rem !important; font-weight: 500 !important; }
   .stButton button { background: #7c6af5 !important; color: #fff !important; border: none !important; border-radius: 10px !important; font-weight: 600 !important; }
   ::-webkit-scrollbar { width: 5px; }
