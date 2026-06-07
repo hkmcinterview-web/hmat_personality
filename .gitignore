@@ -16,6 +16,10 @@ secrets.*
 *_raw.json
 per_essay_*.json
 
+# ── 실제 스펙 데이터 (학점·학교 등) — 템플릿(specs_template.csv)만 허용 ──
+specs.csv
+/specs.csv
+
 # ── 파이썬 ────────────────────────────────────────────────
 __pycache__/
 *.pyc
