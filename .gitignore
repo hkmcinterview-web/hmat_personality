@@ -1,0 +1,24 @@
+# ── 합격/불합격 자소서 원문 보호 (보안 핵심) ─────────────────
+# 자소서 원문은 절대 repo에 올리지 않는다. 로컬에만 존재.
+data/
+*.essay
+*.txt
+!requirements*.txt
+!README*.txt
+
+# ── API 키 / 비밀 ──────────────────────────────────────────
+.env
+*.key
+secrets.*
+.streamlit/secrets.toml
+
+# ── 분석 산출물 중 원문 포함 가능 파일 ──────────────────────
+*_raw.json
+per_essay_*.json
+
+# ── 파이썬 ────────────────────────────────────────────────
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
