@@ -270,7 +270,8 @@ def main():
         try:
             metrics = analyze_one(client, text, system_prompt)
             results.append(metrics)
-            per_essay.append({"file": f.name, **metrics})
+            per_essay.append({"file": f.name, "company": args.company,
+                              "label": args.label, **metrics})
             sq = metrics.get("star_quality", {})
             print(f"  [{i}/{len(files)}] {f.name} ✓  "
                   f"핵심정량 {metrics.get('quantitative_core_count', '?')}/{metrics.get('quantitative_count', '?')}개, "

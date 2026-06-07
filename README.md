@@ -52,13 +52,22 @@ python analyze_essays.py --input-dir data/failed_hyundai --label failed --compan
 `stats_passed_*.json` 의 `suggested_flag_thresholds` 값을 `scoring_criteria.md` §7 의
 플래그 임계값으로 반영하면 된다.
 
-### 불합격 자소서 = 모델 검증(validation)
+### 합격 vs 탈락 변별력 비교 (현대·기아 통합)
 
-불합격 자소서는 모델이 제대로 낮게 평가하는지 확인하는 용도다.
-`stats_passed.json` vs `stats_failed.json` 을 비교했을 때:
+각 회사 결과를 따로 내면 모수가 작아 신뢰도가 떨어진다. 그래서 비교 단계에서는:
 
-- 불합격이 정량·STAR·BARS 점수가 더 낮으면 → 모델이 잘 구분하는 것
-- 불합격인데 점수가 높게 나오면 → 해당 항목 가중치 재조정 필요 (모델 개선 신호)
+```bash
+python compare_stats.py   # data/per_essay_*.json 전부 자동 풀링
+```
+
+- **변별 지표**(본인기여·행동깊이·BARS 등 1~5 품질점수): **현대+기아 통합**으로
+  합격 vs 탈락 비교 → 모수 최대, 신뢰도 ↑. '격차'가 클수록 잘 가르는 지표(★).
+- **정량·문체·가치**: 회사마다 실제로 다르므로(현대 정량 ~5 vs 기아 ~9) **회사별 분리** 표시.
+
+> 탈락자가 변별 지표에서 확연히 낮으면 → 자소서 안에 차이가 있던 것(모델 성공).
+> 격차가 거의 없으면 → 탈락 사유는 자소서 밖(스펙·외부) → 2축의 스펙 축·멘토 영역.
+
+산출: `data/comparison.json`
 
 ---
 
