@@ -20,27 +20,36 @@
 
 명세서의 예시값(정량 3.1개 등)을 **실제 합격 자소서 기반 숫자**로 교체하기 위한 절차.
 
+```
+# 권장 폴더 구조 (data/ 는 .gitignore — 절대 커밋 안 됨)
+data/
+  passed/
+    passed_hyundai/   ← 현대차 합격 (01.txt, 02.txt, ...)
+    passed_kia/       ← 기아 합격
+  failed_hyundai/     ← 현대차 탈락 (모델 검증용)
+  failed_kia/         ← 기아 탈락
+
+파일 1개 = 지원자 1명.
+Q1/Q2 구분하려면 본문에 [Q1] ... [Q2] ... 마커 삽입 (없으면 전체 통합 분석).
+```
+
 ```bash
-# 1. 설치
+# 1. 설치 & API 키
 pip install -r requirements_analysis.txt
-export ANTHROPIC_API_KEY=sk-...
+export ANTHROPIC_API_KEY=sk-...   # Windows: $env:ANTHROPIC_API_KEY="sk-..."
 
-# 2. 자소서를 텍스트로 저장 (data/ 는 .gitignore 처리되어 절대 커밋 안 됨)
-#    회사별로 폴더를 나눈다 — 인재상 체계가 다르기 때문 (현대=Hyundai Way / 기아=KIAN)
-#    data/passed_hyundai/01.txt , 02.txt , ...   ← 현대차 합격
-#    data/passed_kia/01.txt , ...                ← 기아 합격
-#    data/failed_hyundai/01.txt , ...            ← 불합격 (모델 검증용)
-#    * 파일 1개 = 지원자 1명
-#    * Q1/Q2 구분하려면 본문에 [Q1] ... [Q2] ... 마커 삽입 (선택)
-
-# 3. 실측 실행 (--company 로 회사 지정)
-python analyze_essays.py --input-dir data/passed_hyundai --label passed --company hyundai
-python analyze_essays.py --input-dir data/passed_kia     --label passed --company kia
-python analyze_essays.py --input-dir data/failed_hyundai --label failed --company hyundai
+# 2. 실측 실행 (--company 로 회사 지정)
+python analyze_essays.py --input-dir data/passed/passed_hyundai --label passed --company hyundai
+python analyze_essays.py --input-dir data/passed/passed_kia     --label passed --company kia
+python analyze_essays.py --input-dir data/failed_hyundai        --label failed --company hyundai
+python analyze_essays.py --input-dir data/failed_kia            --label failed --company kia
 ```
 
 > **현대 vs 기아**: 직무 신호(정량·STAR·현장경험)는 사실상 동일해 합쳐도 무방하지만,
 > 인재상/가치 항목은 회사마다 체계가 달라(`--company`) 분리 집계한다.
+>
+> **탈락 샘플 폴더 분리 필수**: `data/failed/` 에 현대·기아를 섞으면 `--company` 지정이
+> 불가능하다. 회사별로 `failed_hyundai/` / `failed_kia/` 로 나눠 저장할 것.
 
 ### 산출물
 
