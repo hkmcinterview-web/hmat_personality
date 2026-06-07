@@ -86,42 +86,60 @@ def build_system_prompt(company: str) -> str:
     fw = VALUE_FRAMEWORKS[company]
     company_kr = "현대자동차" if company == "hyundai" else "기아"
     return f"""당신은 {company_kr} 생산/제조 직무 채용 평가관이다.
-scoring_criteria.md v0.2 기준에 따라 자소서를 분석하고 지표를 추출한다.
+scoring_criteria.md 기준에 따라 자소서를 분석하고 지표를 추출한다.
+변별이 목적이다. 합격·탈락이 똑같이 만점 나오면 안 된다.
+따라서 '있다/없다'가 아니라 '얼마나 깊은가'로, 엄격하게 점수를 벌려라.
 
 [추출 지표 정의]
 - char_count: 공백 포함 전체 글자 수
-- quantitative_count: 측정된 성과를 나타내는 정량 표현 개수
+- quantitative_count: 측정된 정량 표현 총 개수
     (예: "불량률 3%→0.8%", "택타임 12초 단축", "팀원 5명"). 단순 연도/나이는 제외.
+- quantitative_core_count: 위 정량 중 '본인의 핵심 성과에 직접 연결된' 수치만.
+    배경 설명용·단순 나열 수치는 제외. (많이 나열 ≠ 좋음)
 - quantitative_suspicious: 위 정량 중 '과장 의심' 개수.
     트리거: ①개인 단독인데 비현실적 비율(예 혼자 매출300%) ②측정근거/기간 없는 큰 수치
     ③상황 대비 규모 비현실(학부 팀플에 억대 절감) ④baseline 없는 % 개선.
-- star_situation / star_action / star_result: 상황·행동·결과 요소 유무 (true/false)
 - abstract_word_count: 다음 추상어의 총 등장 횟수: {ABSTRACT_WORDS}
-- field_experience: 인턴/현장실습 등 현장경험 언급 여부 (true/false)
+- field_experience_depth: 현장경험 깊이 (0~3)
+    0=없음 / 1=단순 언급 / 2=경험을 구체적으로 서술 / 3=현장에서 직무 관련 문제를 직접 해결
 - certification: 직무 관련 자격증 언급 여부 (true/false)
+- jd_keyword_depth: 직무 용어를 '실제로 적용'했는가 (1~5)
+    1=용어 없음 / 2=용어만 등장 / 3=용어 나열 / 4=일부 적용 맥락 / 5=경험 속에서 깊이 있게 활용
 - jd_keywords_matched: 아래 키워드 중 '실제 사용 맥락과 함께' 등장한 것만 리스트로.
     단순 나열/자랑은 제외. 키워드 목록: {json.dumps(JD_KEYWORDS, ensure_ascii=False)}
 - values_matched: 본문에서 다룬 '{fw['name']}' 가치명 리스트. 목록: {fw['values']}
     (명시적으로 고르지 않았어도 내용상 해당하면 포함)
 
-[BARS 1~5 채점] (각 항목 점수마다 글의 상태로 판단)
-- experience_specificity: 5=STAR4요소+정량2개↑+역할명확 / 3=행동·결과 중 하나 모호 / 1=다짐만
-- job_relevance: 5=키워드다수+사용맥락+직무이해관통 / 3=키워드나열만 / 1=직무무관
-- logical_structure: 5=두괄식+단락별1메시지+문항의도응답 / 3=결론묻힘 / 1=동문서답
-- distinctiveness: 5=고유에피소드+추상어0 / 3=평범+추상어일부 / 1=추상어도배
-- value_fit: 5=가치를행동으로증명+가치–경험–직무삼각연결 / 3=경험연결약함 / 1=가치오해
+[STAR 깊이 — 각 1~5, 엄격하게 벌릴 것] (단순 존재가 아니라 '질'을 본다)
+- situation_clarity: 상황·배경 구체성. 1=불명 / 3=대략 / 5=선명하고 구체
+- role_ownership: 본인 기여 명확도. 1='우리'로 뭉뚱그림 / 3=역할 일부 명확 / 5='내가' 한 일이 분명히 구분됨
+    ★ 합/불을 가르는 핵심 지표. 팀 성과를 본인 것처럼 쓰면 낮게.
+- action_depth: 행동의 주도성·깊이. 1=단순 참여·수행 / 3=주어진 일 충실 / 5=문제를 스스로 정의하고 주도적으로 해결
+- result_causality: 결과–행동 인과. 1=결과가 행동과 무관·모호 / 3=결과 있으나 인과 약함 / 5=본인 행동→결과 인과가 분명+정량
+
+[BARS 1~5 — 엄격하게. 5는 극히 드물게, 대부분 2~4로 벌릴 것]
+- experience_specificity: 5=STAR 모든 깊이 높고 정량 핵심연결 / 3=일부 모호 / 1=다짐만
+- job_relevance: 5=용어 깊이 활용+직무이해 관통 / 3=용어 나열 수준 / 1=직무무관
+- logical_structure: 5=두괄식+단락별1메시지+문항의도 정확 응답 / 3=결론묻힘 / 1=동문서답
+- distinctiveness: 5=고유 에피소드+진부함0 / 3=평범 / 1=누구나 쓸 글
+- value_fit: 5=가치를 행동으로 증명+가치–경험–직무 삼각연결 / 3=경험연결 약함 / 1=가치오해
 
 반드시 아래 JSON 스키마로만 응답한다(설명 금지):
 {{
   "char_count": int,
   "quantitative_count": int,
+  "quantitative_core_count": int,
   "quantitative_suspicious": int,
-  "star_situation": bool, "star_action": bool, "star_result": bool,
   "abstract_word_count": int,
-  "field_experience": bool,
+  "field_experience_depth": int,
   "certification": bool,
+  "jd_keyword_depth": int,
   "jd_keywords_matched": [str],
   "values_matched": [str],
+  "star_quality": {{
+    "situation_clarity": int, "role_ownership": int,
+    "action_depth": int, "result_causality": int
+  }},
   "bars": {{
     "experience_specificity": int, "job_relevance": int,
     "logical_structure": int, "distinctiveness": int, "value_fit": int
@@ -154,8 +172,11 @@ def aggregate(results: list[dict]) -> dict:
     def vals(key):
         return [r[key] for r in results if key in r]
 
-    def stat(key):
-        v = vals(key)
+    def stat(key, sub=None):
+        if sub:
+            v = [r[key][sub] for r in results if key in r and sub in r.get(key, {})]
+        else:
+            v = [r[key] for r in results if key in r]
         if not v:
             return {}
         return {
@@ -164,13 +185,6 @@ def aggregate(results: list[dict]) -> dict:
             "min": min(v), "max": max(v),
             "stdev": round(statistics.stdev(v), 2) if len(v) > 1 else 0,
         }
-
-    # STAR 완성도(0~3) 파생
-    star_scores = [
-        sum([r.get("star_situation", False), r.get("star_action", False),
-             r.get("star_result", False)])
-        for r in results
-    ]
 
     # 빈도 집계
     def freq(key):
@@ -182,34 +196,31 @@ def aggregate(results: list[dict]) -> dict:
 
     bars_keys = ["experience_specificity", "job_relevance",
                  "logical_structure", "distinctiveness", "value_fit"]
-    bars_stat = {}
-    for k in bars_keys:
-        v = [r["bars"][k] for r in results if "bars" in r and k in r["bars"]]
-        if v:
-            bars_stat[k] = {"mean": round(statistics.mean(v), 2),
-                            "median": round(statistics.median(v), 2)}
+    bars_stat = {k: stat("bars", k) for k in bars_keys if stat("bars", k)}
+
+    star_keys = ["situation_clarity", "role_ownership", "action_depth", "result_causality"]
+    star_stat = {k: stat("star_quality", k) for k in star_keys if stat("star_quality", k)}
 
     return {
         "sample_size": n,
         "numeric": {
             "char_count": stat("char_count"),
             "quantitative_count": stat("quantitative_count"),
+            "quantitative_core_count": stat("quantitative_core_count"),
             "quantitative_suspicious": stat("quantitative_suspicious"),
             "abstract_word_count": stat("abstract_word_count"),
-            "star_completeness_0to3": {
-                "mean": round(statistics.mean(star_scores), 2) if star_scores else 0,
-                "median": round(statistics.median(star_scores), 2) if star_scores else 0,
-            },
+            "field_experience_depth_0to3": stat("field_experience_depth"),
+            "jd_keyword_depth_1to5": stat("jd_keyword_depth"),
         },
+        "star_quality": star_stat,
         "rates": {
-            "field_experience": round(sum(r.get("field_experience", False) for r in results) / n, 2) if n else 0,
             "certification": round(sum(r.get("certification", False) for r in results) / n, 2) if n else 0,
         },
         "bars": bars_stat,
         "jd_keyword_freq": freq("jd_keywords_matched"),
         "value_framework_freq": freq("values_matched"),
         "suggested_flag_thresholds": _suggest_thresholds(
-            stat("quantitative_count"), stat("abstract_word_count")),
+            stat("quantitative_core_count"), stat("abstract_word_count")),
     }
 
 
@@ -217,7 +228,7 @@ def _suggest_thresholds(quant_stat: dict, abstract_stat: dict) -> dict:
     """실측 평균 기반 Layer3 플래그 임계값 제안 (명세서 §7)."""
     out = {}
     if quant_stat:
-        out["수치_빈약"] = f"정량 < {round(quant_stat['mean'] * 0.5, 1)}개 (합격자 평균의 50%)"
+        out["핵심수치_빈약"] = f"핵심정량 < {round(quant_stat['mean'] * 0.5, 1)}개 (합격자 평균의 50%)"
     if abstract_stat:
         out["추상어_과다"] = f"추상어 > {round(abstract_stat['mean'] * 2, 1)}개 (합격자 평균의 2배)"
     return out
@@ -260,9 +271,11 @@ def main():
             metrics = analyze_one(client, text, system_prompt)
             results.append(metrics)
             per_essay.append({"file": f.name, **metrics})
+            sq = metrics.get("star_quality", {})
             print(f"  [{i}/{len(files)}] {f.name} ✓  "
-                  f"정량 {metrics.get('quantitative_count', '?')}개, "
-                  f"STAR {sum([metrics.get('star_situation'), metrics.get('star_action'), metrics.get('star_result')])}/3")
+                  f"핵심정량 {metrics.get('quantitative_core_count', '?')}/{metrics.get('quantitative_count', '?')}개, "
+                  f"본인기여 {sq.get('role_ownership', '?')}/5, "
+                  f"행동깊이 {sq.get('action_depth', '?')}/5")
         except Exception as e:
             print(f"  [{i}/{len(files)}] {f.name} ✗  분석 실패: {e}")
 
